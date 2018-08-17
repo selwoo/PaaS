@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="css/mui.css" rel="stylesheet" />
+		<style>
+			.mui-table-view .mui-slider-handle h4{padding-right: 75px;position: relative;}
+			.mui-table-view .mui-slider-handle h4 font{font-size: 12px;position: absolute;right: 0;top: 3px;}
+			.mui-table-view .mui-slider-handle h4 .unread{display: block;background: #FE3C3D;color: #fff;font-size: 12px;float: left;padding: 3px;border-radius: 2px;margin-right: 5px;}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<h1 class="mui-title">消息</h1>
+		</header>
+		<div class="mui-content" id="refreshContainer">
+			<ul class="mui-table-view" id="noticeList"></ul>
+		</div>
+		
+		<script src="js/mui.js"></script>
+		<script src="js/util.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			var query = {
+				columnset: {columns: ['isread','createdon','content','typecode']},
+				criteria: {conditions: []},
+				entityname: "Notice",
+				filter:[],
+				orders: [{attributename: "CreatedOn",ordertype: "1"}],
+				pageinfo: {pagenumber: 1,pagesize: 10}
+			};
+			mui.init({
+				pullRefresh : {
+				    container:"#refreshContainer",
+				    down : {style:'circle',color:'#1D9BE7',offset:'44px',auto: true,callback :pullDownFn},
+				    up : {contentrefresh : "正在加载...",contentnomore:'没有更多数据了',callback:pullUpFn}
+			  	}
+			});
+			mui.plusReady(function(){
+				//点击标为已读
+				mui('#noticeList').on('tap','.mui-table-view-cell',function(event){
+					var _this = this;
+					if(_this.querySelector('.unread')){
+						mui.later(function(){
+							_this.querySelector('.unread').remove();
+							var openwindow = JSON.parse(_this.dataset.openwindow);
+							openwindow.extras.pageData.isread = true;
+							_this.dataset.openwindow = JSON.stringify(openwindow);
+						},400);
+					}
+				});
+			});
+			//下拉刷新
+			function pullDownFn(){
+				query.pageinfo.pagenumber = 1;
+				ajax({
+					path:'api/DataService/RetrieveMultiple',
+					data:{query:query},
+					showWaiting:false,
+					closeWaiting:false,
+					successFn:function(data){
+						mui('#refreshContainer').pullRefresh().endPulldown();
+						document.querySelector('#noticeList').innerHTML = '';
+						var items = data.items;
+						if(items.length == 0){
+							document.querySelector('#noticeList').innerHTML = '<div class="nodata"><svg class="iconsvg"><use xlink:href="#icon-nodata"></use></svg>什么都没有！</div>';
+							mui('#refreshContainer').pullRefresh().disablePullupToRefresh();
+						}else{
+							mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
+							items.length < query.pageinfo.pagesize && mui('#refreshContainer').pullRefresh().disablePullupToRefresh();
+							showListData(items);
+						}
+					}
+				});
+			}
+			//上拉加载
+			function pullUpFn(){
+				query.pageinfo.pagenumber++;
+		    	ajax({
+					path:'api/DataService/RetrieveMultiple',
+					data:{query:query},
+					showWaiting:false,
+					closeWaiting:false,
+					successFn:function(data){
+						var items = data.items;
+						showListData(items);
+						mui('#refreshContainer').pullRefresh().endPullupToRefresh(items.length < query.pageinfo.pagesize);
+					}
+				});
+			}
+			//显示列表数据
+			function showListData(listData){
+				var _html = '';
+				mui.each(listData, function(i, n) {
+					var read = n.isread ? '' : '<span class="unread">未读</span>';
+					_html += '<li class="mui-table-view-cell" data-openwindow=\'{"url":"pages/other/noticeDetail.html","id":"noticeDetail","extras":{"pageData":'+ JSON.stringify(n)
+							+ '},"styles":{"titleNView":{"titleText":"消息详情"}}}\'><div class="mui-slider-right mui-disabled"><a class="mui-btn mui-btn-red">删除</a></div><div class="mui-slider-handle"><h4 class="mui-ellipsis">'
+							+ read + n.name + '<font class="font-gray">' + timeStr(n.createdon,'MM-dd hh:mm') + '</font></h4><p class="mui-ellipsis">' + n.content + '</p></div></li>';
+				});
+				document.querySelector('#noticeList').innerHTML += _html;
+			}
+		</script>
+	</body>
+
+</html>

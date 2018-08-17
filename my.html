@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="css/mui.css" rel="stylesheet" />
+		<style>
+			.mui-table-view{margin-top: 10px;}
+			.mui-table-view .iconfont{font-size: 20px;margin-right: 10px;}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<h1 class="mui-title">我的</h1>
+		</header>
+		<div class="mui-content">
+			<ul class="mui-table-view">
+		        <li class="mui-table-view-cell" data-openwindow='{"url":"pages/account/personInfo.html","id":"personInfo","styles":{"titleNView":{"titleText":"个人资料"}}}'>
+		            <a class="mui-navigate-right"><span class="iconfont icon-account"></span>个人资料</a>
+		        </li>
+		        <li class="mui-table-view-cell" data-openwindow='{"url":"pages/account/changePw.html","id":"changePw","styles":{"titleNView":{"titleText":"修改密码"}}}'>
+		            <a class="mui-navigate-right"><span class="iconfont icon-password"></span>修改密码</a>
+		        </li>
+		    </ul>
+		    <div class="mui-content-padded"><button class="mui-btn mui-btn-red mui-btn-block" id="logoutBtn">退出登录</button></div>
+		</div>
+		
+		<script src="js/mui.js"></script>
+		<script src="js/util.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			mui.init();
+			mui.plusReady(function(){
+				document.querySelector('#logoutBtn').addEventListener('tap',function(){
+					mui.confirm('确定退出登录吗？',function(e){
+						e.index || logout();
+					});
+				});
+			});
+		</script>
+	</body>
+
+</html>

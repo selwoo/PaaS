@@ -1,0 +1,32 @@
+.animated {-webkit-animation-duration: 0.3s;animation-duration: 0.3s;-webkit-animation-fill-mode: both;animation-fill-mode: both;}
+
+@-webkit-keyframes fadeInDown {
+    0%, 100% {-webkit-transition-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);transition-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);}
+    0% {opacity: 0;-webkit-transform: translate3d(0, -100%, 0);transform: translate3d(0, -100%, 0);}
+    100% {-webkit-transform: none;transform: none;}
+}
+@keyframes fadeInDown {
+    0%, 100% {-webkit-transition-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);transition-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);}
+    0% {opacity: 0;-webkit-transform: translate3d(0, -100%, 0);transform: translate3d(0, -100%, 0);}
+	100% {-webkit-transform: none;transform: none;}
+}
+.fade-in-down {-webkit-animation-name: fadeInDown;animation-name: fadeInDown;}
+
+@-webkit-keyframes fadeOutUp {100% {opacity: 0;-webkit-transform: translate3d(0, -100%, 0);transform: translate3d(0, -100%, 0);}}
+@keyframes fadeOutUp {100% {opacity: 0;-webkit-transform: translate3d(0, -100%, 0);transform: translate3d(0, -100%, 0);}}
+.fade-out-up {-webkit-animation-name: fadeOutUp;animation-name: fadeOutUp;}
+
+#downMenuContainer{position: fixed;top: 81px;left: 0;right: 0;bottom:0;background: rgba(0,0,0,0.2);display: none;}
+#downMenuContainer .menu-group {height: auto;max-height:303px;overflow: auto;position: absolute;top:0;width: 100%;background-color: #fff;}
+#downMenuContainer .menu-group .menu-item{display: none;overflow: scroll;margin: 0;}
+
+#downMenuContainer .menu-group .mui-table-view .mui-table-view-cell.active{color: #1D9BE7;}
+#downMenuContainer .menu-group .filter-form{padding: 20px 10px;font-size: 14px;color: #333;}
+#downMenuContainer .menu-group .filter-form:after{height: 0px;}
+#downMenuContainer .menu-group .filter-form input{border-radius: 0px;padding: 5px;height: 35px;font-size: 14px;margin-top: 5px;}
+#downMenuContainer .menu-group .filter-form .range-group{text-align: center;line-height: 40px;}
+#downMenuContainer .menu-group .filter-form .range-group input{width: 45%;white-space:nowrap;}
+#downMenuContainer .menu-group .filter-form button{width: 45%;height: 35px;}
+
+
+

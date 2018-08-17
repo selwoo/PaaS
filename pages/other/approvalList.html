@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="../../css/mui.css" rel="stylesheet" />
+		<link href="../../css/offcanvas-drag-down.css" rel="stylesheet"/>
+		<style>
+			.mui-bar-nav .icon-filter1{position: relative;top: 3px;}
+			#downMenuContainer{top:44px;}
+			.mui-content{height: 100%;}
+			.mui-segmented-control{border-radius: 0;border-left: none;border-right: none;background: #fff;border-color: #dd524d;border: none;}
+			.mui-segmented-control .mui-control-item{line-height: 35px;color: #000;border: none;}
+			.mui-segmented-control .mui-control-item.mui-active{background: #fff;border-bottom: #dd524d 2px solid;color: #dd524d;}
+			
+			.mui-scroll-wrapper .mui-table-view{margin-top: 10px;}
+			#initiateBtn{position: absolute;bottom: 20px;left: 50%;margin-left: -70px;width: 140px;border-radius: 20px;font-size: 16px;z-index: 100;}
+			#initiateBtn .iconfont{margin-right: 10px;}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-arrowleft mui-pull-left"></a>
+			<h1 class="mui-title">审批列表</h1>
+			<a class="nav-badge mui-pull-right" data-index="0"><span class="iconfont icon-filter1"></span></a>
+		</header>
+		<div class="mui-content">
+			<div class="mui-segmented-control">
+				<a class="mui-control-item mui-active" data-index="0">我申请的</a>
+				<a class="mui-control-item" data-index="1">待我审批</a>
+				<a class="mui-control-item" data-index="2">我已审批</a>
+			</div>
+			<div class="mui-scroll-wrapper" id="refreshContainer">
+				<div class="mui-scroll">
+					<ul class="mui-table-view" id="listWrapper"></ul>
+				</div>
+			</div>
+			<button id="initiateBtn" class="mui-btn mui-btn-blue" data-openwindow='{"url":"approvalInitiate.html","id":"approvalInitiate","styles":{"titleNView":{"titleText":"发起审批"}}}'>
+				<span class="iconfont icon-write"></span>发起审批
+			</button>
+		</div>
+		<div id="downMenuContainer">
+			<div class="menu-group">
+				<ul class="mui-table-view menu-item" id="approvalType">
+					<li class="mui-table-view-cell active" data-entityid="">全部</li>
+				</ul>
+			</div>
+		</div>
+		
+		<script src="../../js/mui.js"></script>
+		<script src="../../js/util.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			var pageUnit = {
+				query:{statecode:0,page:1,pagesize:10},
+				//下拉刷新
+				pullDownFn:function(){
+					mui('#refreshContainer').pullRefresh().scrollTo(0,0,50);
+					pageUnit.query.page = 1;
+					ajax({
+						path:'api/DataService/RetrieveWorkFlowStateList',
+						data:pageUnit.query,
+						successFn:function(data){
+							mui('#refreshContainer').pullRefresh().endPulldown();
+							document.querySelector('#listWrapper').innerHTML = '';
+							
+							if(data.items.length == 0){
+								showNodata('#listWrapper')
+								mui('#refreshContainer').pullRefresh().disablePullupToRefresh();
+							}else{
+								mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
+								data.items.length < pageUnit.query.pagesize && mui('#refreshContainer').pullRefresh().disablePullupToRefresh();
+								pageUnit.showListData(data.items);
+							}
+						}
+					});
+				},
+				//上拉加载
+				pullUpFn:function(){
+					pageUnit.query.page++;
+			    	ajax({
+						path:'api/DataService/RetrieveWorkFlowStateList',
+						data:pageUnit.query,
+						showWaiting:false,
+						closeWaiting:false,
+						successFn:function(data){
+							pageUnit.showListData(data.items);
+							mui('#refreshContainer').pullRefresh().endPullupToRefresh(data.items.length < pageUnit.query.pagesize);
+						}
+					});
+				},
+				//显示列表数据
+				showListData:function(listData){
+					var _html = '';
+					var timeText = pageUnit.query.statecode == 2 ? ['审批时间：','handletime'] : ['申请时间：','createdon'];
+					mui.each(listData, function(i, n) {
+						_html += '<li class="mui-table-view-cell"><h5 class="mui-ellipsis">审批类型：' + n.entitylocalizedname + '</h5><h5 class="mui-ellipsis">'
+								+ timeText[0] + n[timeText[1]] + '</h5><h5 class="mui-ellipsis-2">申请人：' + n.applicantidname + '</h5></li>';
+					});
+					document.querySelector('#listWrapper').innerHTML += _html;
+				}
+			}
+			mui.init({
+				pullRefresh : {
+				    container:"#refreshContainer",
+				    down : {style:'circle',color:'#1D9BE7',offset:'44px',auto:true,callback :pageUnit.pullDownFn},
+				    up : {contentrefresh : "正在加载...",contentnomore:'没有更多数据了',callback:pageUnit.pullUpFn}
+			  	}
+			});
+			mui.plusReady(function(){
+				var dropMenu = new DropMenu({wrapper:'.mui-bar-nav',item:'.nav-badge'});
+				//获取审批类型选项
+				ajax({
+					path:'api/DataService/RetrieveEntities',
+					data:{WorkflowEnabled:true},
+					showWaiting:false,
+					closeWaiting:false,
+					successFn:function(data){
+						var _html = '';
+						mui.each(data, function(i, n) {
+							_html += '<li class="mui-table-view-cell" data-entityid="' + n.entityid + '">' + n.localizedname + '</li>';
+						});
+						document.querySelector('#approvalType').innerHTML += _html;
+					}
+				});
+				//切换审批类型
+				switchMenu('#approvalType','.mui-table-view-cell:not(.active)',function(){
+					mui.extend(pageUnit.query,{entityid:this.dataset.entityid,page:1});
+					pageUnit.pullDownFn();
+				});
+				//切换分类
+				mui('.mui-segmented-control').on('tap','.mui-control-item',function(){
+					mui.extend(pageUnit.query,{statecode:this.dataset.index,page:1});
+					pageUnit.pullDownFn();
+				});
+			});
+		</script>
+	</body>
+
+</html>

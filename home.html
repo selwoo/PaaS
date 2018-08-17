@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="css/mui.css" rel="stylesheet" />
+		<style>
+			.mui-grid-9 .iconfont{font-size: 35px !important;padding: 3px;}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<h1 class="mui-title">首页</h1>
+		</header>
+		<div class="mui-content mui-scroll-wrapper">
+			<div class="mui-scroll">
+				<ul class="mui-table-view mui-grid-view mui-grid-9">
+		            <li class="mui-table-view-cell mui-media mui-col-xs-4 mui-col-sm-3" data-openwindow='{"url":"pages/other/approvalList.html","id":"approvalList"}'>
+		            	<span class="mui-icon iconfont icon-approval"></span><div class="mui-media-body">审批</div>
+		            </li>
+		            <li class="mui-table-view-cell mui-media mui-col-xs-4 mui-col-sm-3">
+		            	<span class="mui-icon mui-icon-home"></span><div class="mui-media-body">仪表板</div>
+		            </li>
+		        </ul>
+			</div>
+		</div>
+		
+		<script src="js/mui.js"></script>
+		<script src="js/util.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			mui.init();
+			mui.plusReady(function(){
+				mui('.mui-scroll-wrapper').scroll();
+				ajax({
+					path:'api/DataService/RetrieveEntities',
+					successFn:function(data){
+						var _html = '';
+						mui.each(data,function(i,n){
+							_html += '<li class="mui-table-view-cell mui-media mui-col-xs-4 mui-col-sm-3" data-openwindow=\'{"url":"pages/entity/view.html","id":"view","extras":'
+									+ JSON.stringify(n) + '}\'><span class="mui-icon mui-icon-location"></span><div class="mui-media-body">' + n.localizedname + '</div></li>';
+						});
+						document.querySelector('.mui-grid-9').innerHTML += _html;
+					}
+				});
+			});
+		</script>
+	</body>
+
+</html>

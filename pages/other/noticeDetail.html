@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="../../css/mui.css" rel="stylesheet" />
+	</head>
+	<body>
+		<div class="mui-content mui-scroll-wrapper">
+		    <div class="mui-scroll" style="padding: 15px;">
+		        <h4 id="name" style="margin-top: 0;line-height: 120%;"></h4>
+		        <p><font id="createdon"></font><span class="mui-pull-right mui-font-blue" id="typecodename"></span></p>
+		        <div id="content" style="margin-top: 20px;font-size: 14px;"></div>
+		    </div>
+		</div>
+		<script src="../../js/mui.js"></script>
+		<script src="../../js/util.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			mui.init();
+			mui.plusReady(function(){
+				var pageData = plus.webview.currentWebview().pageData;
+				document.querySelector('#name').innerText = pageData.name;
+				document.querySelector('#createdon').innerText = timeStr(pageData.createdon,'yyyy-MM-dd hh:mm');
+				document.querySelector('#typecodename').innerText = pageData.typecodename;
+				document.querySelector('#content').innerText = pageData.content;
+				//标记已读
+				if(!pageData.isread){
+					ajax({
+						path:'api/DataService/UpdateNoticeRead',
+						data:{Ids:[pageData.noticeid]},
+						showWaiting:false,
+						closeWaiting:false
+					});
+				}
+			});
+		</script>
+	</body>
+</html>

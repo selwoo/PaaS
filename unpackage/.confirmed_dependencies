@@ -1,0 +1,18 @@
+{
+	"index.html": {
+		"refer": [
+			"home.html",
+			"notice.html",
+			"my.html",
+			"pages/account/login.html"
+		],
+		"resources": [
+			"home.html"
+		]
+	},
+	"my.html": {
+		"refer": [
+			"pages/account/login.html"
+		]
+	}
+}

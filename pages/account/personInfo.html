@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="../../css/mui.css" rel="stylesheet" />
+		<style>
+			.mui-content{padding-top: 1px;font-size: 14px;}
+			.mui-table-view-cell .mui-badge{font-size: 14px;right: 5px;}
+		</style>
+	</head>
+
+	<body>
+		<div class="border-top nav-border"></div>
+		<div class="mui-content">
+			<ul class="mui-table-view">
+		        <li class="mui-table-view-cell mui-disabled">
+		           	手机号码<span class="mui-badge mui-badge-inverted" id="loginname"></span>
+		        </li>
+		        <li class="mui-table-view-cell mui-disabled">
+		           	真实姓名<span class="mui-badge mui-badge-inverted" id="name"></span>
+		        </li>
+		        <li class="mui-table-view-cell mui-disabled">
+		           	性别<span class="mui-badge mui-badge-inverted" id="gendername"></span>
+		        </li>
+		        <li class="mui-table-view-cell mui-disabled">
+		           	所属营业厅<span class="mui-badge mui-badge-inverted" id="businessunitidname"></span>
+		        </li>
+		   </ul>
+		</div>
+		
+		<script src="../../js/mui.js"></script>
+		<script src="../../js/util.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			mui.init();
+			mui.plusReady(function(){
+				var userData = JSON.parse(localStorage.userData);
+				mui.each(['loginname','name','gendername','businessunitidname'],function(i,n){
+					document.querySelector('#' + n).innerText = userData[n];
+				});
+			});
+		</script>
+	</body>
+
+</html>

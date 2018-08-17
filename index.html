@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title></title>
+    <link href="css/mui.css" rel="stylesheet"/>
+    <style>
+    	.mui-bar-tab [data-tab=home] .iconfont:before { content: "\e747"; }
+    	.mui-bar-tab [data-tab=home].mui-active .iconfont:before { content: "\e603"; }
+    	.mui-bar-tab [data-tab=notice] .iconfont:before { content: "\e615"; }
+    	.mui-bar-tab [data-tab=notice].mui-active .iconfont:before { content: "\e62b"; }
+    	.mui-bar-tab [data-tab=my] .iconfont:before { content: "\e61d"; }
+    	.mui-bar-tab [data-tab=my].mui-active .iconfont:before { content: "\e607"; }
+    </style>
+</head>
+<body>
+	<nav class="mui-bar mui-bar-tab">
+	    <a class="mui-tab-item mui-active" data-tab="home">
+	        <span class="mui-icon iconfont"></span>
+	        <span class="mui-tab-label">首页</span>
+	    </a>
+	    <a class="mui-tab-item" data-tab="notice">
+	        <span class="mui-icon iconfont"></span>
+	        <span class="mui-tab-label">消息</span>
+	    </a>
+	    <a class="mui-tab-item" data-tab="my">
+	        <span class="mui-icon iconfont"></span>
+	        <span class="mui-tab-label">我的</span>
+	    </a>
+	</nav>
+	
+	
+	<script src="js/mui.js"></script>
+	<script src="js/util.js"></script>
+	<script type="text/javascript" charset="utf-8">
+      	mui.init();
+		mui.plusReady(function() {
+			plus.webview.currentWebview().setStyle({statusbar:{background:'#336699'}});
+      		if(plus.storage.getItem('serverURL') && plus.storage.getItem('loginData') && localStorage.userData){
+      			tabToggle();
+      		}else{
+      			openWindow({
+					url:'_www/pages/account/login.html',
+					id:'login',
+					styles:{titleNView:{titleText:"登录",autoBackButton:false}},
+					show:{aniShow:"slide-in-left"}
+				});
+      		}
+    	});
+		//tab页切换
+		function tabToggle(){
+			document.querySelector('.mui-bar-tab .mui-tab-item.mui-active').classList.remove('mui-active');
+			document.querySelector('.mui-bar-tab .mui-tab-item[data-tab="home"]').classList.add('mui-active');
+			//加载tab页子窗口
+			var self = plus.webview.currentWebview(),
+				_top = mui.os.ios ? 20 : 0;
+			//选项卡点击事件
+		    var activeTab = mui(".mui-bar-tab .mui-tab-item")[0].getAttribute('data-tab');
+		    self.append(plus.webview.create(activeTab + '.html',activeTab,{top: _top,bottom: 50,statusbar:{background:'#336699'}}));
+			mui('.mui-bar-tab').on('tap', '.mui-tab-item', function(e) {
+				var targetTab = this.getAttribute('data-tab');
+				if (targetTab == activeTab) {
+					return;
+				}else{
+					if(plus.webview.getWebviewById(targetTab)){
+						plus.webview.show(targetTab);
+					}else{
+						self.append(plus.webview.create(targetTab + '.html',targetTab,{top: _top,bottom: 50,statusbar:{background:'#336699'}}));
+					}
+				    //显示目标选项卡
+					plus.webview.hide(activeTab);
+				    activeTab = targetTab;
+				};
+			});
+		}
+		//遍历iconCSS的所有选择符文本，备用
+		function eachIcon(){
+			var _iconCSS = document.createElement('link');
+			_iconCSS.href = 'http://at.alicdn.com/t/font_585155_y1qxfdi22hf9wwmi.css';
+    		_iconCSS.rel= "stylesheet";
+    		document.head.appendChild(_iconCSS);
+    		_iconCSS.addEventListener('load',function(){
+    			var _sheet = _iconCSS.sheet || _iconCSS.styleSheet;  //IE支持styleSheet
+				var _rules = _sheet.cssRules || _sheet.rules;		 //IE支持rules
+				mui.each(_rules,function(){
+					console.log(this.selectorText);
+				});
+    		});
+		}
+    </script>
+</body>
+</html>

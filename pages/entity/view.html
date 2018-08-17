@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="../../css/mui.css" rel="stylesheet" />
+		<link href="../../css/offcanvas-drag-down.css" rel="stylesheet"/>
+		<style>
+			.container{width: 100%;overflow-x: scroll;overflow-y: hidden;}
+			#entityList{background: #fff;}
+			#entityList tr{border-bottom: #eee 1px solid;}
+			#entityList tbody tr:active,#entityList thead th:active{background: #eee;}
+			#entityList td,th{min-width: 100px;max-width: 100px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;padding: 0 5px;}
+			#entityList th{text-align: left;font-weight: normal;font-size: 14px;color: #999;height: 30px;line-height: 30px;padding-right: 10px;position: relative;}
+			#entityList th .mui-icon{display: none;font-size: 20px;right: 0;top:6px;position: absolute;}
+			#entityList th.active{color: #1D9BE7;}
+			#entityList th.active .mui-icon{display: inline-block;}
+			#entityList td{height: 40px;line-height: 40px;font-size: 16px;}
+			#entityList td:first-child,#entityList th:first-child{padding-left: 10px;}
+			#entityList td:last-child,#entityList th:last-child{padding-right: 10px;}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-arrowleft mui-pull-left"></a>
+			<h1 class="mui-title"></h1>
+		</header>
+		<div class="mui-content" id="refreshContainer">
+			<div class="mui-filter border-bottom">
+				<div class="mui-filter-box">
+					<a data-index="0"><font>切换视图</font><span class="iconfont icon-switch"></span></a>
+					<a data-index="1"><font>搜索</font><span class="iconfont icon-search"></span></a>
+				</div>
+			</div>
+			<div class="container">
+				<table id="entityList">
+					<thead></thead>
+					<tbody></tbody>
+				</table>
+			</div>
+		</div>
+		<div id="downMenuContainer">
+			<div class="menu-group">
+				<ul class="mui-table-view menu-item" id="switchView"></ul>
+				<div class="filter-form menu-item" id="search">
+					<div>
+						<label>搜索关键字</label>
+						<input type="text"/>
+					</div>
+					<!--<div>
+						<label>创建时间</label>
+						<div class="range-group"><input data-operator="4" data-field="" type="date" class="mui-pull-left"/> - - <input data-operator="5" data-field="" type="date" class="mui-pull-right"/></div>
+					</div>-->
+					<div>
+						<button class="mui-btn mui-btn-primary mui-btn-outlined btn-reset">重置</button>
+						<button class="mui-btn mui-btn-primary mui-pull-right btn-confirm">确定</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<script src="../../js/mui.js"></script>
+		<script src="../../js/util.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			var pageUnit = {
+				currentWebview:null,
+				queryview:[],
+				query:null,
+				theadHtml:'',
+				tbodyHtml:'',
+				//获取视图布局
+				getViewLayout:function(queryviewid){
+					pageUnit.query = {queryviewid:queryviewid,page:1,pagesize:10};
+					ajax({
+						path:'api/DataService/RetrieveQueryView',
+						data:{QueryViewId:queryviewid},
+						closeWaiting:false,
+						successFn:function(data){
+							var layout = JSON.parse(data.layoutconfig);
+							var _theadHtml = _tbodyHtml = '';
+							mui.each(layout.rows[0].cells,function(i,n){
+								_theadHtml += '<th data-name="' + n.name + '" style="min-width:' + n.width + 'px;max-width:' + n.width + 'px;">' + n.label + '<span></span></th>';
+								_tbodyHtml += '<td>" + handleEmptyStr(n["' + n.name + '"]) + "</td>';
+							});
+							pageUnit.theadHtml = '<tr>' + _theadHtml + '</tr>';
+							pageUnit.tbodyHtml = '"' + _tbodyHtml + '"';
+							pageUnit.pullDownFn(true);
+						}
+					});
+				},
+				//下拉刷新
+				pullDownFn:function(switchthead){
+					mui('#refreshContainer').pullRefresh().scrollTo(0,0,50);
+					pageUnit.query.page = 1;
+					ajax({
+						path:'api/DataService/RetrieveMultipleByQueryView',
+						data:pageUnit.query,
+						successFn:function(data){
+							mui('#refreshContainer').pullRefresh().endPulldown();
+							document.querySelector('#entityList tbody').innerHTML = '';
+							
+							if(data.items.length == 0){
+								document.querySelector('#entityList tbody').innerHTML = '没有数据！';
+								mui('#refreshContainer').pullRefresh().disablePullupToRefresh();
+							}else{
+								mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
+								data.items.length < pageUnit.query.pagesize && mui('#refreshContainer').pullRefresh().disablePullupToRefresh();
+								pageUnit.showListData(data.items);
+							}
+							//是否更新表格头
+							if(switchthead){
+								document.querySelector('#entityList thead').innerHTML = pageUnit.theadHtml;
+							}
+						}
+					});
+				},
+				//上拉加载
+				pullUpFn:function(){
+					pageUnit.query.page++;
+			    	ajax({
+						path:'api/DataService/RetrieveMultipleByQueryView',
+						data:pageUnit.query,
+						showWaiting:false,
+						closeWaiting:false,
+						successFn:function(data){
+							pageUnit.showListData(data.items);
+							mui('#refreshContainer').pullRefresh().endPullupToRefresh(data.items.length < pageUnit.query.pagesize);
+						}
+					});
+				},
+				//显示列表数据
+				showListData:function(listData){
+					var _html = '';
+					mui.each(listData, function(i, n) {
+						_html += '<tr>' + eval(pageUnit.tbodyHtml) + '</tr>';
+					});
+					document.querySelector('#entityList tbody').innerHTML += _html;
+				}
+			}
+			mui.init({
+				pullRefresh : {
+				    container:"#refreshContainer",
+				    down : {style:'circle',color:'#1D9BE7',offset:'44px',callback :pageUnit.pullDownFn},
+				    up : {contentrefresh : "正在加载...",contentnomore:'没有更多数据了',callback:pageUnit.pullUpFn}
+			  	}
+			});
+			mui.plusReady(function(){
+				pageUnit.currentWebview = plus.webview.currentWebview();
+				document.querySelector('.mui-title').innerText = pageUnit.currentWebview.localizedname;
+				ajax({
+					path:'api/DataService/RetrieveEntityQueryViews',
+					data:{entityId:pageUnit.currentWebview.entityid},
+					closeWaiting:false,
+					successFn:function(data){
+						pageUnit.queryview = data;
+						var switchHtml = '';
+						mui.each(data,function(i,n){
+							var active = i == 0 ? ' active' : '';
+							switchHtml += '<li class="mui-table-view-cell' + active + '" data-id="' + n.queryviewid + '">' + n.name + '</li>';
+						});
+						document.querySelector('#switchView').innerHTML = switchHtml;
+						//检查是否有视图数据
+						if(data.length > 0){
+							pageUnit.getViewLayout(data[0].queryviewid);
+						}else{
+							plus.nativeUI.closeWaiting();
+							showNodata('.container','没有视图数据！');
+							mui('#refreshContainer').pullRefresh().disablePullupToRefresh();
+						}
+					}
+				});
+				
+				var dropMenu = new DropMenu();
+				//切换视图
+				switchMenu('#switchView','.mui-table-view-cell:not(.active)',function(){
+					pageUnit.getViewLayout(this.dataset.id);
+				});
+				//搜索
+				mui('#search').on('tap','.mui-btn',function(){
+					var _input = document.querySelector('#search input');
+					if(this.classList.contains('btn-reset')) _input.value = '';
+					pageUnit.query.q = _input.value;
+					pageUnit.query.page = 1;
+					pageUnit.pullDownFn();
+				});
+				//排序
+				switchMenu('#entityList','thead th',function(){
+					var sortdirection = this.dataset.name == pageUnit.query.sortby && pageUnit.query.sortdirection == 1 ? 0 : 1;
+					this.querySelector('span').className = 'mui-icon ' + ['mui-icon-arrowthinup','mui-icon-arrowthindown'][sortdirection];
+					mui.extend(pageUnit.query,{sortby:this.dataset.name,sortdirection:sortdirection,page:1});
+					pageUnit.pullDownFn();
+				});
+			});
+		</script>
+	</body>
+
+</html>

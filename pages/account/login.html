@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="../../css/mui.css" rel="stylesheet" />
+		<style>
+			.mui-content{overflow-x: hidden;}
+			.page{width: 200%;white-space: nowrap;}
+			.page > div{width: 50%;float: left;}
+			.setLabel{padding: 20px 15px 10px;margin: 0;}
+			.login #setServerURL{padding: 10px 5px;color: #878787;margin: 0;}
+			.login #setServerURL .mui-icon{position: relative;top: 1px;}
+			.login .logo{width: 35%;height: auto;margin: 20% auto 20px;display: block;}
+			.login .login-form{padding: 20px 30px;}
+			.login .login-form .input-row{position: relative;}
+			.login .login-form .input-row label{position: absolute;left: 8px;top: 7px;padding-right: 8px;padding-top: 2px;pointer-events: none;}
+			.login .login-form .input-row label .iconfont{font-size: 24px;color: #999;}
+			.login .login-form .input-row input{padding-left: 50px;}
+			.login .login-form > p{font-size: 16px;}
+		</style>
+	</head>
+
+	<body>
+		<div class="mui-content">
+			<div class="page">
+				<div class="set">
+					<h5 class="setLabel">请填写服务器地址</h5>
+				 	<div class="mui-input-group">
+				 	    <div class="mui-input-row">
+				 	        <input type="url" class="mui-input-clear" placeholder="例：http://www.juyun.com" id="serverURL"/>
+				 	    </div>
+				 	</div>
+				 	<div class="mui-content-padded"><button class="mui-btn mui-btn-blue mui-btn-block" id="setSubmitBtn">保存</button></div>
+				</div>
+				<div class="login">
+					<h5 id="setServerURL">
+						<span class="mui-icon mui-icon-arrowleft"></span>设置服务器地址
+					</h5>
+					<img class="logo" src="../../images/logo.png"/>
+					<h4 class="mui-text-center">聚云PaaS云平台</h4>
+					<div class="login-form">
+						<div class="input-row">
+							<label class="border-right"><span class="iconfont icon-account"></span></label>
+					    	<input type="email" class="mui-input-clear" placeholder="账号" id="account">
+						</div>
+						<div class="input-row">
+							<label class="border-right"><span class="iconfont icon-password"></span></label>
+					    	<input type="password" class="mui-input-clear" placeholder="密码" id="password">
+						</div>
+						<div class="input-row">
+							<label class="border-right"><span class="iconfont icon-organization"></span></label>
+					    	<input type="text" class="mui-input-clear" placeholder="组织" id="org">
+						</div>
+						<button class="mui-btn mui-btn-blue mui-btn-block" id="loginBtn">登录</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		
+		<script src="../../js/mui.js"></script>
+		<script src="../../js/util.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			var pageUnit = {
+				//显示缓存数据
+				showData:function(){
+					if(plus.storage.getItem('loginData')){
+						var _loginData = JSON.parse(plus.storage.getItem('loginData'));
+						document.querySelector("#account").value = _loginData.account || '';
+						document.querySelector("#password").value = _loginData.password || '';
+						document.querySelector("#org").value = _loginData.org || '';
+					}
+				},
+				//页面切换动画
+				switchPage:function(index){
+					var _content = document.querySelector('.mui-content');
+					var _startLeft = _content.scrollLeft;
+					var _moveLeft = (document.body.offsetWidth*index - _startLeft)/20;
+					var i = 1;
+					var _timer = setInterval(function(){
+						_content.scrollLeft = _startLeft + _moveLeft*i;
+						i++;
+						i > 20 && clearInterval(_timer);
+					},10);
+				}
+			};
+			mui.init({keyEventBind: {backbutton: false}});
+			mui.plusReady(function(){
+				var plusWebview = plus.webview;
+				plusWebview.currentWebview().setStyle({'popGesture':'none'});
+				//删除页面
+				mui.later(function(){
+					mui.each(plusWebview.all(),function(){
+						(this != plusWebview.getLaunchWebview() && this != plusWebview.currentWebview()) && this.close('none');
+					});
+				},500);
+				//使用缓存的账号
+				pageUnit.showData();
+				//判断是否设置地址
+				if(plus.storage.getItem('serverURL')){
+					document.querySelector('#serverURL').value = plus.storage.getItem('serverURL');
+					document.querySelector('.mui-content').scrollLeft = document.body.offsetWidth;
+				}
+				//设置服务器URL
+	      		document.querySelector('#setSubmitBtn').addEventListener('tap',function(){
+	      			var _serverURL = document.querySelector('#serverURL').value;
+	      			if(!_serverURL){
+	      				mui.alert('请填写服务器地址！');
+	      			}else if(!/(https?|ftp|file):\/\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/.test(_serverURL)){
+	      				mui.alert('请输入正确的URL路径！');
+	      			}else{
+	      				if(_serverURL.charAt(_serverURL.length-1) != '/') _serverURL += '/';
+	      				plus.storage.setItem('serverURL',_serverURL);
+	      				plusWebview.currentWebview().setStyle({titleNView:{titleText:"登录"}});
+	      				mui.toast('保存成功');
+	      				pageUnit.switchPage(1);
+	      			}
+	      		});
+	      		//点击设置服务器URL
+				document.querySelector('#setServerURL').addEventListener("tap", function() {
+					plusWebview.currentWebview().setStyle({titleNView:{titleText:"设置服务器地址"}});
+					pageUnit.switchPage(0);
+					mui.focus(document.querySelector('#serverURL'));
+				});
+				//点击登录
+				document.querySelector('#loginBtn').addEventListener("tap", function() {
+					var loginData = {
+						account:document.querySelector("#account").value,
+						password:document.querySelector("#password").value,
+						org:document.querySelector("#org").value
+					};
+					if(!loginData.account){
+						mui.alert("请填写账号");
+					}else if(!loginData.password){
+						mui.alert("请填写密码");
+					}else if(!loginData.org){
+						mui.alert("请填写组织");
+					}else{
+						loginData.deviceid = plus.device.uuid;
+						plus.nativeUI.showWaiting();
+						mui.ajax(plus.storage.getItem('serverURL') + 'api/Account/SignIn', {
+							data: JSON.stringify(loginData),
+							headers:{"content-type":"application/json"},
+							dataType: 'json',
+							type: 'post',
+							timeout: 20000,
+							success: function(e) {
+								if(e.StatusCode == 1){
+									plus.nativeUI.closeWaiting();
+									plus.storage.setItem('loginData',JSON.stringify(loginData));
+									mui.toast('登录成功');
+									localStorage.userData = e.Content;
+									plusWebview.getLaunchWebview().evalJS('tabToggle()');
+									mui.back();
+								}else{
+									var tipsText = {
+										'0':'用户名或密码错误',
+										'-1':'组织已禁用',
+										'-2':'组织不存在',
+										'-3':'帐号禁用'
+									};
+									plus.nativeUI.closeWaiting();
+									mui.alert(tipsText[e.StatusCode]);
+								}
+							},
+							error:function(text,type,err){
+								plus.nativeUI.closeWaiting();
+								mui.alert("服务器响应失败!");
+								console.log(text.responseText);
+							}
+						});
+					}
+				});
+			});
+		</script>
+	</body>
+
+</html>

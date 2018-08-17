@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="../../css/mui.css" rel="stylesheet" />
+		<style>
+			.tips{padding: 10px;}
+			.tips p{font-size: 14px;}
+			.mui-input-group{margin-bottom: 10px;}
+			.mui-input-group #explanation{height: 83px;}
+		</style>
+	</head>
+
+	<body>
+		<div class="mui-bar mui-bar-footer">
+			<button class="mui-btn mui-btn-blue mui-btn-block" id="submitBtn">提交</button>
+		</div>
+		<div class="mui-content">
+			<div class="mui-scroll-wrapper">
+				<div class="mui-scroll">
+					<div class="tips">
+						<p>1、审批流程：<br/>①加班时长在24小时内：申请人→直属领导</p>
+						<p>2、注意事项：</p>
+						<p>3、提醒：</p>
+					</div>
+					<form class="mui-input-group">
+					    <div class="mui-input-row">
+					        <label>类型</label>
+					        <select>
+					        	<option>--请选择--</option>
+					        	<option>加班</option>
+					        	<option>请假</option>
+					        	<option>外勤</option>
+					        </select>
+					    </div>
+					    <div class="mui-input-row">
+					        <label>时间</label>
+					        <input type="text" class="mui-input-clear" placeholder="请选择">
+					    </div>
+					    <div class="mui-input-row">
+					        <label>时长(小时)</label>
+					        <input type="text" class="mui-input-clear" placeholder="请输入时长">
+					    </div>
+					</form>
+					<form class="mui-input-group">
+					    <div class="mui-input-row" id="explanation">
+					        <label>说明</label>
+					        <textarea placeholder="请填写说明" rows="3"></textarea>
+					    </div>
+					</form>
+				</div>
+			</div>
+		</div>
+		
+		<script src="../../js/mui.js"></script>
+		<script src="../../js/util.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			mui.init();
+			mui.plusReady(function(){
+				
+			});
+		</script>
+	</body>
+
+</html>
